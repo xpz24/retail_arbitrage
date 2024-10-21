@@ -1,0 +1,23 @@
+{
+  "name": "retail_arbitrage",
+  "version": "1.0.0",
+  "main": "link.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "xpz24",
+  "license": "MIT",
+  "description": "",
+  "type": "module",
+  "devDependencies": {
+    "eslint": "^9.13.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-n": "^17.11.1",
+    "html-validate": "^8.24.2",
+    "prettier": "^3.3.3",
+    "sass": "^1.80.3",
+    "stylelint": "^16.10.0",
+    "stylelint-config-prettier-scss": "^1.0.0",
+    "stylelint-config-standard-scss": "^13.1.0"
+  }
+}

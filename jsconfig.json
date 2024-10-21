@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "NodeNext", // Use NodeNext to support ESM and CJS in Node.js
+    "target": "ESNext", // Target the latest ECMAScript version for modern features
+    "checkJs": true, // Enable type checking in JavaScript files
+    "allowSyntheticDefaultImports": true, // Allow default imports from CommonJS modules
+    "moduleResolution": "NodeNext", // Use Node.js's module resolution system for both ESM and CJS
+    "esModuleInterop": true, // Ensure compatibility between ESM and CommonJS
+    "forceConsistentCasingInFileNames": true // Enforce consistent file naming for better cross-platform compatibility
+  },
+  "exclude": ["node_modules"],
+  "include": ["src/**/*"],
+}
