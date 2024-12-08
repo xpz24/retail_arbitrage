@@ -1,15 +1,27 @@
 {
-    "files.exclude": {
-        "node_modules": true,
-        "package.json": true,
-        "**/package-lock.json": true,
-        "eslint.config.mjs": true,
-        ".vscode": true,
-        ".git": true,
-        ".gitignore": true,
-        ".htmlvalidate.json" : true,
-        "jsconfig.json" : true,
-        "prettier.config.mjs" : true,
-        "stylelint.config.mjs" : true,
-    }
+  "files.exclude": {
+    "node_modules": false,
+    "package.json": false,
+    "**/package-lock.json": false,
+    "eslint.config.mjs": false,
+    ".vscode": false,
+    ".git": false,
+    ".gitignore": false,
+    ".htmlvalidate.json": false,
+    "jsconfig.json": false,
+    "prettier.config.mjs": false,
+    "stylelint.config.mjs": false
+  },
+  "cSpell.words": [
+    "Avenir",
+    "frontmatter",
+    "grayscale",
+    "ianvs",
+    "isnotdefined",
+    "mavrin",
+    "rgba",
+    "tseslint",
+    "vfile"
+  ],
+  "cmake.options.statusBarVisibility": "visible"
 }

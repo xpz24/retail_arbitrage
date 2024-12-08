@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MyMy Shopping Assistance!</title>
+  </head>
+  <body>
+    <header class="mymy-header">
+      <div class="mymy-logo">
+        <img alt="MyMy Shopping" class="logo-img" src="./location/logo.svg" />
+      </div>
+      <div class="right-menu">
+        <div class="user-profile"></div>
+        <div class="cart"></div>
+      </div>
+      <div class="product-link"></div>
+    </header>
+  </body>
+</html>
