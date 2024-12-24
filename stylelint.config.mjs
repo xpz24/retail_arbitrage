@@ -31,6 +31,7 @@ export default {
     'csstools/value-no-unknown-custom-properties': true,
     'rem-over-px/rem-over-px': true,
     'order/order': ['custom-properties', 'declarations', 'rules', 'at-rules'],
+    'at-rule-no-unknown': [true, {ignoreAtRules: ['tailwind']} ]
   },
   ignoreDisables: true,
 }

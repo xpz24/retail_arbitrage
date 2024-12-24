@@ -34,7 +34,10 @@ function urlToPath(pathStringUrl: string | URL): string {
   ) {
     return fileURLToPath(pathStringUrl)
   }
-  // If not a file url then return as it is, the functions only job is to convert file urls
+  if (typeof pathStringUrl !== 'string') {
+    throw new TypeError('The input to this function can only be strings or file urls')
+  }
+
   return pathStringUrl
 }
 
@@ -50,7 +53,8 @@ function returnUrl(resolvedPath: string, file = true): string | URL {
 async function ensurePathAccessible(
   resolvedPath: string,
   fsValue: keyof FsConsts = 'read',
-): Promise<boolean> {
+  noCrash = false,
+): Promise<boolean | undefined> {
   const fsConsts: FsConsts = {
     exist: fs.constants.F_OK,
     read: fs.constants.R_OK,
@@ -65,26 +69,39 @@ async function ensurePathAccessible(
     )
   }
 
-  try {
-    await fs.access(resolvedPath, mode)
-  } catch {
-    console.log(`Path is not accessible: ${resolvedPath} -> ${mode.toString()}`)
-    return false
+  if (noCrash) {
+    try {
+      await fs.access(resolvedPath, mode)
+    } catch {
+      console.log(`Path is not accessible: ${resolvedPath} -> ${mode.toString()}`)
+      return false
+    }
+
+    return true
   }
 
-  return true
+  await fs.access(resolvedPath, mode)
 }
 
-async function resolvePathAlias(aliasPathUrl: string | URL, options?: Options): Promise<string> {
+async function resolvePathAlias(
+  aliasPathUrl: string | URL,
+  options?: Options,
+): Promise<string | URL> {
   if (!aliasPathUrl || (typeof aliasPathUrl !== 'string' && !(aliasPathUrl instanceof URL))) {
     throw new TypeError('Invalid file path input')
+  }
+
+  const aliasPath = urlToPath(aliasPathUrl)
+  // Check if aliasPathUrl is an absolute path
+  if (path.isAbsolute(aliasPath)) {
+    await ensurePathAccessible(aliasPath, options?.fsValue)
+    return returnUrl(aliasPath, options?.file)
   }
 
   const tsconfigPath = path.resolve(process.cwd(), 'tsconfig.json')
   const tsconfigContent = await fs.readFile(tsconfigPath, 'utf8')
   const tsconfig = JSON.parse(tsconfigContent) as PartialTsConfig
   const paths = tsconfig.compilerOptions?.paths
-  const aliasPath = urlToPath(aliasPathUrl)
 
   if (paths) {
     const aliases = Object.fromEntries(
@@ -104,7 +121,7 @@ async function resolvePathAlias(aliasPathUrl: string | URL, options?: Options): 
 
         for (const unresolvedPath of unresolvedPathAliasList) {
           const resolvedPath = path.join(unresolvedPath, aliasPath.slice(alias.length)) //aliasPath.replace(alias, resolvedPathAlias)
-          const accessible = await ensurePathAccessible(resolvedPath, options?.fsValue)
+          const accessible = await ensurePathAccessible(resolvedPath, options?.fsValue, true)
 
           if (accessible) {
             return returnUrl(resolvedPath, options?.file)
@@ -112,12 +129,6 @@ async function resolvePathAlias(aliasPathUrl: string | URL, options?: Options): 
         }
       }
     }
-  }
-
-  // Fallback: Check if aliasPathUrl is an absolute path
-  if (path.isAbsolute(aliasPath)) {
-    await ensurePathAccessible(aliasPath, options?.fsValue)
-    return returnUrl(aliasPath, options?.file)
   }
 
   // At this stage the aliasPath must be a relative path without an alias

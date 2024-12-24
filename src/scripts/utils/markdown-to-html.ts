@@ -9,17 +9,17 @@ import remarkParse from 'remark-parse'
 import remarkRehype from 'remark-rehype'
 import remarkToc from 'remark-toc'
 import { unified } from 'unified'
-import remarkExtractFrontmatter from './frontmatter-parser'
+import remarkExtractFrontmatter from '@utils/frontmatter-parser.ts'
 import rehypeFormat from 'rehype-format'
 
-interface Options {
+interface Options<T> {
   callerDirectory?: string
   useToc?: boolean
-  frontmatter?: boolean
+  frontmatterKeys?: (keyof T)[]
 }
 
-interface Output {
-  frontmatter: Record<string, unknown>
+export interface ParsedMarkdown<T> {
+  frontmatter: T
   html: string
 }
 
@@ -31,64 +31,72 @@ async function fetchMarkdownFile(filePath: URL): Promise<string> {
   return await response.text()
 }
 
-async function markToHtml(filePathUrl: string | URL, options?: Options): Promise<Output> {
-  try {
-    if (!filePathUrl || (typeof filePathUrl !== 'string' && !(filePathUrl instanceof URL))) {
-      throw new TypeError('Invalid file path input')
-    }
+async function markToHtml<T = undefined>(
+  filePathUrl: string | URL,
+  options?: Options<T>
+): Promise<ParsedMarkdown<T>> {
+  if (!filePathUrl || (typeof filePathUrl !== 'string' && !(filePathUrl instanceof URL))) {
+    throw new TypeError('Invalid file path input')
+  }
 
-    const filePath = filePathUrl instanceof URL ? filePathUrl.toString() : filePathUrl
+  const filePath = filePathUrl instanceof URL ? filePathUrl.toString() : filePathUrl
 
-    // Ensure the file exists and is an MD file
-    if (!filePath.endsWith('.md')) {
-      throw new TypeError('Input file must be a Markdown (.md) file')
-    }
+  // Ensure the file exists and is an MD file
+  if (!filePath.endsWith('.md')) {
+    throw new TypeError('Input file must be a Markdown (.md) file')
+  }
 
-    // Resolve the file path using the URL class
-    const resolvedUrl = options?.callerDirectory
-      ? new URL(filePath, `file://${options.callerDirectory}/`) // For node use caller directory with relative path
-      : new URL(filePath, import.meta.url)
+  // Resolve the file path using the URL class
+  const resolvedUrl = options?.callerDirectory
+    ? new URL(filePath, `file://${options.callerDirectory}/`) // For node use caller directory with relative path
+    : new URL(filePath, import.meta.url)
 
-    const markdown =
-      resolvedUrl.protocol === 'file:'
-        ? await fs.readFile(url.fileURLToPath(resolvedUrl), 'utf8') //for node
-        : await fetchMarkdownFile(resolvedUrl)
+  const markdown =
+    resolvedUrl.protocol === 'file:'
+      ? await fs.readFile(url.fileURLToPath(resolvedUrl), 'utf8') //for node
+      : await fetchMarkdownFile(resolvedUrl)
 
-    // Create the processor with required plugins
-    const processor = unified().use(remarkParse).use(remarkGfm)
+  // Create the processor with required plugins
+  const processor = unified().use(remarkParse).use(remarkGfm)
 
-    // get front matter details here before proceeding
-    let frontmatterObject: Record<string, unknown> | undefined
+  // get frontmatter details here before proceeding, could be done at the end via vFile.data.frontmatter
+  let frontmatterObject!: T
 
-    if (options?.frontmatter) {
-      processor.use(remarkFrontmatter).use(remarkExtractFrontmatter, {
-        onExtract: (frontmatter) => {
-          frontmatterObject = frontmatter
-        },
-      })
-    }
+  if (Array.isArray(options?.frontmatterKeys)) {
+    const frontmatterKeys = options.frontmatterKeys
+    processor.use(remarkFrontmatter).use(remarkExtractFrontmatter, {
+      onExtract: (frontmatter) => {
+        isCorrectFrontMatter<T>(frontmatter, frontmatterKeys)
+        frontmatterObject = frontmatter
+      },
+    })
+  }
 
-    // Add optional plugins based on input arguments
-    if (options?.useToc) {
-      processor.use(remarkToc, { prefix: 'user-content-' })
-    }
+  // Add optional plugins based on input arguments
+  if (options?.useToc) {
+    processor.use(remarkToc, { prefix: 'user-content-' })
+  }
 
-    // Rehype, Sanitize and Process
-    const vFile = await processor
-      .use(remarkRehype)
-      .use(rehypeSlug)
-      .use(rehypeSanitize)
-      .use(rehypeFormat)
-      .use(rehypeStringify)
-      .process(markdown)
+  // Rehype, Sanitize and Process
+  const vFile = await processor
+    .use(remarkRehype)
+    .use(rehypeSlug)
+    .use(rehypeSanitize)
+    .use(rehypeFormat)
+    .use(rehypeStringify)
+    .process(markdown)
 
-    return { frontmatter: frontmatterObject, html: String(vFile) }
-  } catch (error) {
-    const ERROR =
-      error instanceof Error
-        ? new Error(`Failed to convert Markdown file to HTML: ${error.name} ->${error.message}`)
-        : error
-    throw ERROR
+  return { frontmatter: frontmatterObject, html: String(vFile) }
+}
+
+function isCorrectFrontMatter<T>(object: unknown, keys: (keyof T)[]): asserts object is T {
+  if (
+    typeof object !== 'object' ||
+    object === null ||
+    Object.keys(object).length !== keys.length || // Check for exact keys
+    keys.some((key) => !(key in object) || (object as T)[key] === 'undefined') // Validate key presence
+  ) {
+    throw new Error('Frontmatter does not match the format')
   }
 }
 

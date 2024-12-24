@@ -1,11 +1,19 @@
-import markToHtml from '@utils/markdown-to-html'
-import resolvePathAlias from '@utils/node-path-alias'
+export class CacheService {
+  #store = new Map<string, unknown>()
 
-// console.log(await resolvePathAlias('/another-awesome-movie.md'))
+  has(key: string) {
+    return this.#store.has(key)
+  }
 
-console.log(
-  await markToHtml(await resolvePathAlias('/another-awesome-movie.md'), {
-    frontmatter: true,
-    useToc: true
-  }),
-)
+  get(key: string) {
+    return this.#store.get(key)
+  }
+
+  set(key: string, value: unknown) {
+    this.#store.set(key, value)
+  }
+
+  delete(key: string) {
+    return this.#store.delete(key)
+  }
+}

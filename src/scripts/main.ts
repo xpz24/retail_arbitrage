@@ -2,11 +2,8 @@ import '../styles/style.css'
 import viteLogo from '/vite.svg'
 import typescriptLogo from '../images/typescript.svg'
 import { setupCounter } from './counter.ts'
-import markToHtml from './utils/markdown-to-html.ts'
 
 const app = document.querySelector<HTMLDivElement>('#app')
-
-const {frontmatter, html} = await markToHtml('/another-awesome-movie.md', { useToc: true , frontmatter: true})
 
 if (app) {
   app.innerHTML = `
@@ -24,8 +21,6 @@ if (app) {
     <p class="read-the-doc">
       Click on the Vite and TypeScript logos to learn more
     </p>
-    ${frontmatter.subtitle as string}
-    ${html}
   `
 }
 

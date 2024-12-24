@@ -22,14 +22,15 @@ const stylisticTypeChecked = tseslint.configs.stylisticTypeChecked.map((ruleSet)
 // importX plugin
 const importXRecommended = eslintPluginImportX.flatConfigs.recommended
 const importXTypeScript = eslintPluginImportX.flatConfigs.typescript
-importXRecommended.languageOptions.ecmaVersion = 'latest' // Probably not necessary 
+importXRecommended.languageOptions.ecmaVersion = 'latest' // Probably not necessary
 
 const baseConfig = tseslint.config(
   eslint.configs.recommended,
-  ...strictTypeChecked,
-  ...stylisticTypeChecked,
+  eslintPluginUnicorn.configs['flat/recommended'],
   importXRecommended,
   importXTypeScript,
+  ...strictTypeChecked,
+  ...stylisticTypeChecked,
   {
     languageOptions: {
       globals: {
@@ -47,7 +48,6 @@ const baseConfig = tseslint.config(
     },
   },
   // nodePlugin.configs['flat/recommended'],
-  eslintPluginUnicorn.configs['flat/recommended'],
   eslintConfigPrettier,
 )
 

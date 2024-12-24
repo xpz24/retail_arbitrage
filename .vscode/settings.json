@@ -23,5 +23,10 @@
     "tseslint",
     "vfile"
   ],
-  "cmake.options.statusBarVisibility": "visible"
+  "cmake.options.statusBarVisibility": "visible",
+  "css.validate": false, // These should be workspace settings
+  "less.validate": false,
+  "scss.validate": false,
+  "typescript.validate.enable": true, // Disable TypeScript's built-in checker
+  "javascript.validate.enable": false
 }
